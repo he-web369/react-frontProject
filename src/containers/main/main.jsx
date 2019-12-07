@@ -13,6 +13,8 @@ import  Laoban from '../laoban/laoban'
 import Message  from '../message/message'
 import  Personal from '../personal/personal'
 import  NotFound  from '../../components/not-found/not-found'
+import NavFooter from "../../components/nav-footer/nav-footer";
+import Chat from '../chat/chat'
 
 class Main extends Component{
     navList=[
@@ -80,21 +82,30 @@ class Main extends Component{
             const {navList}=this
             const path=this.props.location.pathname//请求的路径
             const currentNav=navList.find(nav=>nav.path===path)//得到当前的nav
+            if(currentNav){
+                if(user.type==='laoban'){
+                    navList[1].hide=true
+                }else{
+                    navList[0].hide=true
+                }
+            }
+        const unReadCount = this.props.unReadCount
         return (
             <div>
-                {currentNav?<NavBar>{currentNav.title}</NavBar>:null}
+                {currentNav?<NavBar className='stick-top'>{currentNav.title}</NavBar>:null}
                 <Switch>
-                    <Route path='/laobaninfo' component={LaobanInfo}/>
-                    <Route path='/dasheninfo' component={DashenInfo}/>
-                    {navList.map(nav=><Route path={nav.path} component={nav.component}/>)}
-                    <Route  component={NotFound}/>
-                    {currentNav?<div>底部导航</div>:null}
+                        <Route path='/laobaninfo' component={LaobanInfo}/>
+                        <Route path='/dasheninfo' component={DashenInfo}/>
+                        <Route path='/chat/:userid' component={Chat}/>
+                        {navList.map((nav,index)=><Route key={index} path={nav.path} component={nav.component}/>)}
+                        <Route  component={NotFound}/>
                 </Switch>
+                {currentNav?<NavFooter unReadCount={unReadCount} navList={this.navList}/>:null}
             </div>
         )
     }
 }
 export default connect(
-    state=>({user:state.user}),
+    state=>({user:state.user,unReadCount:state.chat.unReadCount}),
     {getUser}
 )(Main)
